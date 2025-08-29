@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MERN Stack Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dashboard-card {
+            transition: all 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .file-upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .file-upload-area:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        .file-upload-area.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Login Section -->
+    <div id="loginSection" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-white text-3xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">TASK MANAGEMENT SYSTEM</h1>
+                <p class="text-gray-600">Sign in to access your dashboard</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Enter your email"
+                    >
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Enter your password"
+                    >
+                </div>
+                
+                <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    Invalid credentials. Please try again.
+                </div>
+                
+                <button 
+                    type="submit"
+                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all duration-200"
+                >
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p>Demo Credentials:</p>
+                <p class="font-mono">bhavsar.30naishal@gmail.com/ password123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboardSection" class="hidden min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button onclick="logout()" class="flex items-center space-x-2 text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="dashboard-card bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Total Agents</p>
+                            <p class="text-3xl font-bold text-gray-800" id="totalAgents">5</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Total Lists</p>
+                            <p class="text-3xl font-bold text-gray-800" id="totalLists">25</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-list text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600">Active Tasks</p>
+                            <p class="text-3xl font-bold text-gray-800" id="activeTasks">12</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-tasks text-orange-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="border-b border-gray-200 mb-8">
+                <nav class="-mb-px flex space-x-8">
+                    <button id="agentsTab" class="border-b-2 border-blue-500 text-blue-600 font-medium py-4 px-1 text-sm">
+                        <i class="fas fa-users mr-2"></i>Agents
+                    </button>
+                    <button id="uploadTab" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-4 px-1 text-sm">
+                        <i class="fas fa-upload mr-2"></i>Upload CSV
+                    </button>
+                    <button id="distributionTab" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-4 px-1 text-sm">
+                        <i class="fas fa-share-alt mr-2"></i>Distribution
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Agents Tab Content -->
+            <div id="agentsContent" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Agent Management</h2>
+                    <button onclick="showAddAgentModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add Agent
+                    </button>
+                </div>
+
+                <div class="agent-grid">
+                    <!-- Agent cards will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Upload CSV Tab Content -->
+            <div id="uploadContent" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Upload CSV File</h2>
+                        <p class="text-gray-600">Upload a CSV file containing contacts to distribute among agents</p>
+                    </div>
+
+                    <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('csvFile').click()">
+                        <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" class="hidden">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-cloud-upload-alt text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Drop your file here</h3>
+                        <p class="text-gray-600 mb-4">Supports CSV, XLSX, and XLS files</p>
+                        <button type="button" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Browse Files
+                        </button>
+                    </div>
+
+                    <div id="uploadProgress" class="hidden mt-6">
+                        <div class="bg-gray-100 rounded-full h-2 mb-2">
+                            <div class="progress-bar bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 text-center">Uploading...</p>
+                    </div>
+
+                    <div id="uploadSuccess" class="hidden mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        File uploaded successfully! 25 contacts processed.
+                    </div>
+
+                    <div id="uploadError" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribution Tab Content -->
+            <div id="distributionContent" class="tab-content hidden">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Distribution Results</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                        <!-- Distribution cards will be dynamically inserted here -->
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribution Summary</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                <p class="text-2xl font-bold text-blue-600" id="distAgent1">5</p>
+                                <p class="text-sm text-gray-600">Agent 1 Tasks</p>
+                            </div>
+                            <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <p class="text-2xl font-bold text-green-600" id="distAgent2">5</p>
+                                <p class="text-sm text-gray-600">Agent 2 Tasks</p>
+                            </div>
+                            <div class="text-center p-4 bg-orange-50 rounded-lg">
+                                <p class="text-2xl font-bold text-orange-600" id="distAgent3">5</p>
+                                <p class="text-sm text-gray-600">Agent 3 Tasks</p>
+                            </div>
+                            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                <p class="text-2xl font-bold text-purple-600" id="distAgent4">5</p>
+                                <p class="text-sm text-gray-600">Agent 4 Tasks</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Agent Modal -->
+    <div id="addAgentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">Add New Agent</h3>
+                <button onclick="closeAddAgentModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="addAgentForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input type="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                    <div class="flex space-x-2">
+                        <select class="w-20 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option>+1</option>
+                            <option>+91</option>
+                            <option>+44</option>
+                            <option>+61</option>
+                        </select>
+                        <input type="tel" required class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="closeAddAgentModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700">
+                        Add Agent
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        const agents = [
+            { id: 1, name: "John Smith", email: "john@example.com", mobile: "+1-555-0123", status: "active" },
+            { id: 2, name: "Sarah Johnson", email: "sarah@example.com", mobile: "+1-555-0124", status: "active" },
+            { id: 3, name: "Mike Wilson", email: "mike@example.com", mobile: "+1-555-0125", status: "active" },
+            { id: 4, name: "Emily Davis", email: "emily@example.com", mobile: "+1-555-0126", status: "inactive" },
+            { id: 5, name: "David Brown", email: "david@example.com", mobile: "+1-555-0127", status: "active" }
+        ];
+
+        const sampleCSVData = [
+            { firstName: "Alice", phone: "1234567890", notes: "Interested in product demo" },
+            { firstName: "Bob", phone: "0987654321", notes: "Follow up next week" },
+            { firstName: "Charlie", phone: "5551234567", notes: "Potential client" },
+            { firstName: "Diana", phone: "4449876543", notes: "Requested quote" },
+            { firstName: "Evan", phone: "7775551234", notes: "Cold lead" }
+        ];
+
+        // DOM Elements
+        const loginSection = document.getElementById('loginSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const csvFileInput = document.getElementById('csvFile');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const uploadSuccess = document.getElementById('uploadSuccess');
+        const uploadError = document.getElementById('uploadError');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Tab Navigation
+        document.getElementById('agentsTab').addEventListener('click', () => switchTab('agents'));
+        document.getElementById('uploadTab').addEventListener('click', () => switchTab('upload'));
+        document.getElementById('distributionTab').addEventListener('click', () => switchTab('distribution'));
+
+        // File Upload Handling
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        csvFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        // Login Form Submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Mock authentication
+            if (email === 'bhavsar.30naishal@gmail.com' && password === 'password123') {
+                loginError.classList.add('hidden');
+                loginSection.classList.add('hidden');
+                dashboardSection.classList.remove('hidden');
+                loadDashboard();
+            } else {
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        // Add Agent Form
+        document.getElementById('addAgentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Agent added successfully! (This would save to database in a real application)');
+            closeAddAgentModal();
+        });
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Content').classList.remove('hidden');
+            document.getElementById(tabName + 'Tab').classList.add('border-blue-500', 'text-blue-600');
+            document.getElementById(tabName + 'Tab').classList.remove('border-transparent', 'text-gray-500');
+
+            // Load specific tab data
+            if (tabName === 'agents') loadAgents();
+            if (tabName === 'distribution') loadDistribution();
+        }
+
+        function loadDashboard() {
+            loadAgents();
+            updateStats();
+        }
+
+        function loadAgents() {
+            const agentGrid = document.querySelector('.agent-grid');
+            agentGrid.innerHTML = agents.map(agent => `
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <span class="px-3 py-1 text-xs rounded-full ${agent.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                            ${agent.status}
+                        </span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">${agent.name}</h3>
+                    <p class="text-gray-600 mb-2"><i class="fas fa-envelope mr-2"></i>${agent.email}</p>
+                    <p class="text-gray-600"><i class="fas fa-phone mr-2"></i>${agent.mobile}</p>
+                    <div class="mt-4 flex space-x-2">
+                        <button class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700">
+                            Edit
+                        </button>
+                        <button class="flex-1 bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-300">
+                            ${agent.status === 'active' ? 'Deactivate' : 'Activate'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadDistribution() {
+            const distributionGrid = document.querySelector('#distributionContent .grid');
+            distributionGrid.innerHTML = agents.slice(0, 4).map((agent, index) => `
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">${agent.name}</h3>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                            ${index === 3 ? 5 + (25 % 5) : 5} tasks
+                        </span>
+                    </div>
+                    <div class="space-y-3">
+                        ${sampleCSVData.map(contact => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-800">${contact.firstName}</p>
+                                    <p class="text-sm text-gray-600">${contact.phone}</p>
+                                </div>
+                                <span class="text-xs text-gray-500">${contact.notes}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            // Update stats with random numbers for demo
+            document.getElementById('totalAgents').textContent = agents.length;
+            document.getElementById('totalLists').textContent = '25';
+            document.getElementById('activeTasks').textContent = Math.floor(Math.random() * 20) + 10;
+        }
+
+        function handleFileUpload(file) {
+            const validTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            
+            if (!validTypes.includes(file.type) && !['csv', 'xls', 'xlsx'].includes(fileExtension)) {
+                showUploadError('Invalid file type. Please upload CSV, XLS, or XLSX files.');
+                return;
+            }
+
+            // Simulate upload process
+            uploadProgress.classList.remove('hidden');
+            uploadSuccess.classList.add('hidden');
+            uploadError.classList.add('hidden');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                document.querySelector('.progress-bar').style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        uploadProgress.classList.add('hidden');
+                        uploadSuccess.classList.remove('hidden');
+                        // Simulate distribution
+                        switchTab('distribution');
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function showUploadError(message) {
+            errorMessage.textContent = message;
+            uploadError.classList.remove('hidden');
+        }
+
+        function showAddAgentModal() {
+            document.getElementById('addAgentModal').classList.remove('hidden');
+        }
+
+        function closeAddAgentModal() {
+            document.getElementById('addAgentModal').classList.add('hidden');
+        }
+
+        function logout() {
+            loginSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pre-load some data for demonstration
+            loadAgents();
+        });
+    </script>
+</body>
+</html>
+
